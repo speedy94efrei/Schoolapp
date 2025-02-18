@@ -7,12 +7,16 @@ import { OpaqueColorValue, StyleProp, ViewStyle } from 'react-native';
 
 // Add your SFSymbol to MaterialIcons mappings here.
 const MAPPING = {
-  // See MaterialIcons here: https://icons.expo.fyi
-  // See SF Symbols in the SF Symbols app on Mac.
-  'house.fill': 'home',
-  'paperplane.fill': 'send',
-  'chevron.left.forwardslash.chevron.right': 'code',
+  'house.fill': 'home',  
+  'paperplane.fill': 'send',  
+  'chevron.left.forwardslash.chevron.right': 'code',  
   'chevron.right': 'chevron-right',
+
+  // 🔥 Ajout des icônes pour tes pages
+  'book.fill': 'menu-book',          // 📚 Devoir
+  'note.text': 'sticky-note-2',       // 📝 Notes
+  'calendar': 'event',                // 📅 Calendrier
+  'person.crop.circle.fill': 'person' // 👤 Profil
 } as Partial<
   Record<
     import('expo-symbols').SymbolViewProps['name'],
