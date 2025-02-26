@@ -3,8 +3,7 @@ const fs = require("fs");
 const csvParser = require("csv-parser");
 require("dotenv").config();
 
-const SUPABASE_URL = "https://jfqhohgczksnkrubhcbu.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmcWhvaGdjemtzbmtydWJoY2J1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNTcyNDAyMSwiZXhwIjoyMDUxMzAwMDIxfQ.HAAviPE8GXdM3JVxa2UZg8JVI_b5NHG23YrHTe2-ecE";
+
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 

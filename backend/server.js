@@ -1,34 +1,27 @@
-const { createClient } = require("@supabase/supabase-js");
+require("dotenv").config(); // Charge les variables d'environnement
+const express = require("express");
+const cors = require("cors");
 
+const eleveRoutes = require("./routes/eleveRoutes"); 
+const devoirRoutes = require("./routes/devoirRoutes"); 
+const utilisateurRoutes = require("./routes/utilisateurRoutes"); // ✅ Ajout de la route utilisateur
 
+const app = express();
+app.use(express.json());
+app.use(cors());
 
-// 📌 Initialisation de Supabase
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Définition des routes
+app.use("/api/eleves", eleveRoutes);
+app.use("/api/devoir", devoirRoutes);
+app.use("/api/utilisateur", utilisateurRoutes); // ✅ Ajout de la route utilisateur
 
-// 📌 Fonction d'importation
-async function testInsert() {
-    console.log("🛠️ Test d'insertion dans Supabase...");
+// Démarrer le serveur SEULEMENT si ce n'est pas un test
+const PORT = process.env.PORT || 5000;
+const SERVER_IP = process.env.SERVER_IP || "localhost";
 
-    const { data, error } = await supabase
-        .from("utilisateur")  // Vérifie que "utilisateur" est bien le nom de la table
-        .insert([
-            {
-                nom: "Test",
-                prenom: "Utilisateur",
-                email: "test.utilisateur@email.com",
-                motdepasse: "test123",
-                role: "Eleve",
-            },
-        ]);
+app.listen(PORT, () => {
+    console.log(`🚀 Serveur en écoute sur http://${SERVER_IP}:${PORT}`);
+});
 
-    if (error) {
-        console.error("❌ Erreur lors de l'insertion :", error);
-    } else {
-        console.log("✅ Insertion réussie :", data);
-    }
-}
-
-// ✅ Lancer le test d’insertion
-testInsert();
-
-
+// **Exporter `app` pour les tests**
+module.exports = app;

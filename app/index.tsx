@@ -1,184 +1,161 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
-  KeyboardAvoidingView,
-  Animated,
-  Image
+import React, { useState } from 'react';
+import { 
+  SafeAreaView, View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert 
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
-export default function LoginScreen() {
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [errorShakeAnimation] = useState(new Animated.Value(0));
-  const [secureText, setSecureText] = useState(true);
-  const router = useRouter();
+const subjects = [
+  "Français", "Mathématiques", "Histoire-Géo", "Anglais", "SVT",
+  "Physique-Chimie", "Technologie", "EPS", "Musique", "Arts Plastiques"
+];
 
-  useEffect(() => {
-    if (Object.keys(errors).length > 0) {
-      startShakeAnimation();
+// 🔹 Fonction pour générer les devoirs en dur
+const generateAssignments = () => {
+  return subjects.map(subject => ({
+    subject,
+    assignments: Array.from({ length: Math.floor(Math.random() * 2) + 1 }, (_, i) => ({
+      id: Date.now() + i,
+      title: `Devoir ${i + 1}`,
+      dueDate: new Date(Date.now() + Math.random() * 10000000000).toISOString().split('T')[0],
+      description: `Description détaillée du devoir en ${subject}.`
+    })).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+  }));
+};
+
+const DevoirsScreen = () => {
+  const [assignmentsData, setAssignmentsData] = useState(generateAssignments());
+  const [newDevoir, setNewDevoir] = useState({ title: '', dueDate: '', description: '', subject: '' });
+
+  // 🔹 Fonction pour ajouter un devoir
+  const addDevoir = () => {
+    if (!newDevoir.title || !newDevoir.dueDate || !newDevoir.description || !newDevoir.subject) {
+      Alert.alert("Erreur", "Veuillez remplir tous les champs !");
+      return;
     }
-  }, [errors]);
 
-  const startShakeAnimation = useCallback(() => {
-    Animated.sequence([
-      Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
-      Animated.timing(errorShakeAnimation, { toValue: -10, duration: 50, useNativeDriver: true }),
-      Animated.timing(errorShakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
-      Animated.timing(errorShakeAnimation, { toValue: 0, duration: 50, useNativeDriver: true })
-    ]).start();
-  }, [errorShakeAnimation]);
-
-  const handleTextChange = (field: keyof typeof formData) => (text: string) => {
-    setFormData((prevData) => ({ ...prevData, [field]: text }));
-    if (errors[field]) {
-      setErrors((prevErrors) => {
-        const newErrors = { ...prevErrors };
-        delete newErrors[field as keyof typeof newErrors];
-        return newErrors;
+    setAssignmentsData(prevData => {
+      return prevData.map(subjectData => {
+        if (subjectData.subject === newDevoir.subject) {
+          return {
+            ...subjectData,
+            assignments: [...subjectData.assignments, {
+              id: Date.now(),
+              title: newDevoir.title,
+              dueDate: newDevoir.dueDate,
+              description: newDevoir.description
+            }]
+          };
+        }
+        return subjectData;
       });
-    }
+    });
+
+    setNewDevoir({ title: '', dueDate: '', description: '', subject: '' });
+    Alert.alert("Succès", "Devoir ajouté !");
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.container}>
-        
-        {/* LOGO DE L'APPLICATION - PLUS GRAND ET PLUS HAUT */}
-        <Image source={require('@/assets/images/logo.png')} style={styles.logo} />
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.pageTitle}>📚 Gestion des Devoirs</Text>
 
-        {/* Formulaire de connexion CENTRÉ */}
-        <Animated.View style={[styles.formContainer, { transform: [{ translateX: errorShakeAnimation }] }]}>
-          <Text style={styles.formTitle}>Bienvenue</Text>
-          <Text style={styles.subText}>Veuillez entrer vos identifiants pour vous connecter</Text>
-
-          {/* Input Email */}
-          <View style={styles.inputContainer}>
-            <MaterialCommunityIcons name="email-outline" size={20} color="#004E64" style={styles.icon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Adresse e-mail"
-              placeholderTextColor="#004E64"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={formData.email}
-              onChangeText={handleTextChange('email')}
-            />
-          </View>
-
-          {/* Input Password */}
-          <View style={styles.inputContainer}>
-            <MaterialCommunityIcons name="lock-outline" size={20} color="#004E64" style={styles.icon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Mot de passe"
-              placeholderTextColor="#004E64"
-              secureTextEntry={secureText}
-              value={formData.password}
-              onChangeText={handleTextChange('password')}
-            />
-            <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-              <MaterialCommunityIcons
-                name={secureText ? 'eye-off-outline' : 'eye-outline'}
-                size={20}
-                color="#004E64"
-                style={styles.iconRight}
-              />
-            </TouchableOpacity>
-          </View>
-
-        
-          <TouchableOpacity style={styles.loginButton}>
-            <Text style={styles.loginText} onPress={()=> router.replace('/(tabs)') } >Connexion</Text>
-          </TouchableOpacity>
-        </Animated.View>
+      {/* ✅ Formulaire d'ajout de devoir */}
+      <View style={styles.formContainer}>
+        <Text style={styles.formTitle}>Ajouter un Devoir</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Titre du devoir"
+          placeholderTextColor="#004E64"
+          value={newDevoir.title}
+          onChangeText={(text) => setNewDevoir({ ...newDevoir, title: text })}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Date de rendu (YYYY-MM-DD)"
+          placeholderTextColor="#004E64"
+          value={newDevoir.dueDate}
+          onChangeText={(text) => setNewDevoir({ ...newDevoir, dueDate: text })}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Description du devoir"
+          placeholderTextColor="#004E64"
+          value={newDevoir.description}
+          onChangeText={(text) => setNewDevoir({ ...newDevoir, description: text })}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Matière (ex: Mathématiques)"
+          placeholderTextColor="#004E64"
+          value={newDevoir.subject}
+          onChangeText={(text) => setNewDevoir({ ...newDevoir, subject: text })}
+        />
+        <TouchableOpacity style={styles.addButton} onPress={addDevoir}>
+          <Text style={styles.addButtonText}>Ajouter le Devoir</Text>
+        </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+
+      {/* ✅ Liste des devoirs */}
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {assignmentsData.map(({ subject, assignments }) => (
+          <View key={subject} style={styles.subjectContainer}>
+            <Text style={styles.subjectTitle}>{subject}</Text>
+            {assignments.length > 0 ? assignments.map(assign => (
+              <View key={assign.id} style={styles.assignmentCard}>
+                <View style={styles.assignmentHeader}>
+                  <Ionicons name="clipboard-outline" size={22} color="#004E64" />
+                  <Text style={styles.assignmentTitle}>{assign.title}</Text>
+                </View>
+                <Text style={styles.assignmentDate}>📅 À rendre le {assign.dueDate}</Text>
+                <Text style={styles.assignmentDescription}>{assign.description}</Text>
+              </View>
+            )) : (
+              <Text style={styles.noAssignments}>Aucun devoir disponible</Text>
+            )}
+          </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#E8F1F2', // 🔹 Fond principal (Gris clair)
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logo: {
-    width: 400,
-    height: 200,
-    marginBottom: 100,
-    marginTop: -50,
-    resizeMode: 'contain',
-  },
+  container: { flex: 1, backgroundColor: '#E8F1F2', padding: 15 },
+  pageTitle: { fontSize: 24, fontWeight: 'bold', color: '#13293D', textAlign: 'center', marginBottom: 15 },
   formContainer: {
-    width: '90%',
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 20,
-    padding: 25,
-    elevation: 5,
-    shadowColor: '#13293D', // 🔹 Ombre bleu foncé
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
-  formTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#13293D', // 🔹 Texte principal en bleu foncé
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 15,
     marginBottom: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 4,
   },
-  subText: {
-    fontSize: 15,
-    color: '#247BA0', // 🔹 Bleu moyen pour le sous-titre
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#1B98E0', // 🔹 Bleu clair pour les champs
-    paddingHorizontal: 15,
-    borderWidth: 1,
-    borderColor: '#006494', // 🔹 Bleu intense pour la bordure
-    marginBottom: 12,
-  },
-  icon: {
-    marginRight: 10,
-    color: '#13293D', // 🔹 Icônes en bleu foncé
-  },
-  iconRight: {
-    marginLeft: 'auto',
-    color: '#13293D', // 🔹 Icônes en bleu foncé
-  },
+  formTitle: { fontSize: 18, fontWeight: 'bold', color: '#13293D', marginBottom: 10, textAlign: 'center' },
   input: {
-    flex: 1,
+    backgroundColor: '#F0F5F9',
+    borderRadius: 8,
+    padding: 12,
     fontSize: 16,
-    color: '#13293D', // 🔹 Texte en bleu foncé
+    marginBottom: 10,
+    color: '#13293D',
   },
-  loginButton: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#006494', // 🔹 Bleu intense pour le bouton
-    borderRadius: 25,
+  addButton: {
+    backgroundColor: '#006494',
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 10,
-    elevation: 5,
   },
-  loginText: {
-    color: 'white', // Texte blanc pour le bouton
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  addButtonText: { fontSize: 16, fontWeight: 'bold', color: '#FFF' },
+  subjectContainer: { backgroundColor: '#FFFFFF', borderRadius: 10, padding: 15, marginBottom: 10, elevation: 4 },
+  subjectTitle: { fontSize: 18, fontWeight: 'bold', color: '#13293D', marginBottom: 5 },
+  assignmentCard: { backgroundColor: '#F0F5F9', padding: 12, borderRadius: 8, marginTop: 8 },
+  assignmentHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
+  assignmentTitle: { fontSize: 16, fontWeight: 'bold', color: '#13293D', marginLeft: 8 },
+  assignmentDate: { fontSize: 14, color: '#006494', marginTop: 2 },
+  assignmentDescription: { fontSize: 14, color: '#13293D', fontStyle: 'italic', marginTop: 5 },
+  noAssignments: { fontSize: 14, color: '#247BA0', fontStyle: 'italic' },
 });
+
+export default DevoirsScreen;
