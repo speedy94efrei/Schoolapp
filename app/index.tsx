@@ -9,7 +9,7 @@ const subjects = [
   "Physique-Chimie", "Technologie", "EPS", "Musique", "Arts Plastiques"
 ];
 
-// 🔹 Fonction pour générer les devoirs en dur
+
 const generateAssignments = () => {
   return subjects.map(subject => ({
     subject,
@@ -26,7 +26,6 @@ const DevoirsScreen = () => {
   const [assignmentsData, setAssignmentsData] = useState(generateAssignments());
   const [newDevoir, setNewDevoir] = useState({ title: '', dueDate: '', description: '', subject: '' });
 
-  // 🔹 Fonction pour ajouter un devoir
   const addDevoir = () => {
     if (!newDevoir.title || !newDevoir.dueDate || !newDevoir.description || !newDevoir.subject) {
       Alert.alert("Erreur", "Veuillez remplir tous les champs !");
@@ -58,7 +57,7 @@ const DevoirsScreen = () => {
     <SafeAreaView style={styles.container}>
       <Text style={styles.pageTitle}>📚 Gestion des Devoirs</Text>
 
-      {/* ✅ Formulaire d'ajout de devoir */}
+    
       <View style={styles.formContainer}>
         <Text style={styles.formTitle}>Ajouter un Devoir</Text>
         <TextInput
@@ -94,7 +93,7 @@ const DevoirsScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* ✅ Liste des devoirs */}
+  
       <ScrollView showsVerticalScrollIndicator={false}>
         {assignmentsData.map(({ subject, assignments }) => (
           <View key={subject} style={styles.subjectContainer}>
